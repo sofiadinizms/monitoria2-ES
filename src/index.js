@@ -55,6 +55,17 @@ class Rental {
   }
 
   /**
+   * @return {number}
+   */
+  getFrequentRenterPoints() {
+    if (this.movie.priceCode === Movie.NEW_RELEASE && this.daysRented > 1) {
+        return 2;
+    } else {
+        return 1;
+    }
+  }
+
+  /**
    * @type {Movie} 
    */
   get movie() { return this._movie; }
@@ -128,32 +139,23 @@ class Customer {
    * @return {number}
    */
 
-    /**
-     * @method statement
-     * @return {string}
-     */
-     statement() {
-      let totalAmount = 0;
-      let frequentRenterPoints = 0;
+   statement() {
+    let totalAmount = 0;
+    let frequentRenterPoints = 0;
 
-      let result = `Rental Record for ${this.name}\n`;
+    let result = `Rental Record for ${this.name}\n`;
 
-      for (let rental of this.rentals) {
-          frequentRenterPoints++;
+    for (let rental of this.rentals) {
+        frequentRenterPoints += rental.getFrequentRenterPoints(); // <-- novo método!
 
-          // add bonus for a two day new release rental
-          if (rental.movie.priceCode === Movie.NEW_RELEASE && rental.daysRented > 1) {
-              frequentRenterPoints++;
-          }
+        //show figures for this rental
+        result += `\t${rental.movie.title}\t${rental.getCharge()}\n`;
+        totalAmount += rental.getCharge();
+    }
 
-          //show figures for this rental
-          result += `\t${rental.movie.title}\t${rental.getCharge()}\n`;
-          totalAmount += rental.getCharge();
-      }
-
-      //add footer lines
-      result += `Amount owed is ${totalAmount}\nYou earned ${frequentRenterPoints} frequent renter points`;
-      return result;
+    //add footer lines
+    result += `Amount owed is ${totalAmount}\nYou earned ${frequentRenterPoints} frequent renter points`;
+    return result;
   }
 }
 
