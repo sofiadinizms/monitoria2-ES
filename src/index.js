@@ -139,8 +139,6 @@ class Customer {
       let result = `Rental Record for ${this.name}\n`;
 
       for (let rental of this.rentals) {
-          let thisAmount = rental.getCharge(); // <-- método movido para outra classe
-
           frequentRenterPoints++;
 
           // add bonus for a two day new release rental
@@ -149,8 +147,8 @@ class Customer {
           }
 
           //show figures for this rental
-          result += `\t${rental.movie.title}\t${thisAmount}\n`;
-          totalAmount += thisAmount;
+          result += `\t${rental.movie.title}\t${rental.getCharge()}\n`;
+          totalAmount += rental.getCharge();
       }
 
       //add footer lines
