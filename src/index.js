@@ -63,6 +63,37 @@ class Rental {
    * @type {number}
    */
   get daysRented() { return this._daysRented; }
+
+      /**
+     * @return {number}
+     */
+       getCharge() { // note que não precisa mais de parâmetro!
+        let amount = 0;
+
+        switch (this.movie.priceCode) {
+            case Movie.REGULAR:
+                amount += 2;
+                if (this.daysRented > 2) {
+                    amount += (this.daysRented - 2) * 1.5;
+                }
+                break;
+            case Movie.NEW_RELEASE:
+                amount += this.daysRented * 3;
+                break;
+            case Movie.CHILDREN:
+                    amount += 1.5;
+                if (this.daysRented > 3) {
+                    amount += (this.daysRented - 3) * 1.5;
+                }
+                break;
+        }
+
+        return amount;
+    }
+
+  amountFor(rental) {
+    return rental.getCharge(); // agora apenas delega chamada para método movido
+  }
 }
 
 class Customer {
@@ -96,58 +127,35 @@ class Customer {
    * @param {Rental} rental
    * @return {number}
    */
-  amountFor(rental) {
-  let amount = 0;
 
-  switch (rental.movie.priceCode) {
-      case Movie.REGULAR:
-          amount += 2;
-          if (rental.daysRented > 2) {
-              amount += (rental.daysRented() - 2) * 1.5;
+    /**
+     * @method statement
+     * @return {string}
+     */
+     statement() {
+      let totalAmount = 0;
+      let frequentRenterPoints = 0;
+
+      let result = `Rental Record for ${this.name}\n`;
+
+      for (let rental of this.rentals) {
+          let thisAmount = rental.getCharge(); // <-- método movido para outra classe
+
+          frequentRenterPoints++;
+
+          // add bonus for a two day new release rental
+          if (rental.movie.priceCode === Movie.NEW_RELEASE && rental.daysRented > 1) {
+              frequentRenterPoints++;
           }
-          break;
-      case Movie.NEW_RELEASE:
-          amount += rental.daysRented * 3;
-          break;
-      case Movie.CHILDREN:
-              amount += 1.5;
-          if (rental.daysRented > 3) {
-              amount += (rental.daysRented - 3) * 1.5;
-          }
-          break;
-  }
 
-    return amount;
-}
+          //show figures for this rental
+          result += `\t${rental.movie.title}\t${thisAmount}\n`;
+          totalAmount += thisAmount;
+      }
 
-  /**
-   * @method statement
-   * @return {string}
-   */
-  statement() {
-    let totalAmount = 0;
-    let frequentRenterPoints = 0;
-
-    let result = `Rental Record for ${this.name}\n`;
-
-    for (let rental of this.rentals) {
-        let thisAmount = this.amountFor(rental); // <-- novo método!
-
-        frequentRenterPoints++;
-
-        // add bonus for a two day new release rental
-        if (rental.movie.priceCode === Movie.NEW_RELEASE && rental.daysRented > 1) {
-            frequentRenterPoints++;
-        }
-
-        //show figures for this rental
-        result += `\t${rental.movie.title}\t${thisAmount}\n`;
-        totalAmount += thisAmount;
-    }
-
-    //add footer lines
-    result += `Amount owed is ${totalAmount}\nYou earned ${frequentRenterPoints} frequent renter points`;
-    return result;
+      //add footer lines
+      result += `Amount owed is ${totalAmount}\nYou earned ${frequentRenterPoints} frequent renter points`;
+      return result;
   }
 }
 
