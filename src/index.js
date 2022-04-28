@@ -133,30 +133,50 @@ class Customer {
   addRental(rental) {
       this._rentals.push(rental);
   }
+  	/**
+    * @method statement
+    * @return {string}
+    */
+	statement() {
+        let result = `Rental Record for ${this.name}\n`;
 
-  /**
-   * @param {Rental} rental
-   * @return {number}
-   */
+        for (let rental of this.rentals) {
+            //show figures for this rental
+            result += `\t${rental.movie.title}\t${rental.getCharge()}\n`;
+        }
 
-   statement() {
-    let totalAmount = 0;
-    let frequentRenterPoints = 0;
-
-    let result = `Rental Record for ${this.name}\n`;
-
-    for (let rental of this.rentals) {
-        frequentRenterPoints += rental.getFrequentRenterPoints(); // <-- novo método!
-
-        //show figures for this rental
-        result += `\t${rental.movie.title}\t${rental.getCharge()}\n`;
-        totalAmount += rental.getCharge();
+        //add footer lines
+        result += `Amount owed is ${this.getTotalCharge()}\nYou earned ${this.getTotalFrequentRenterPoints()} frequent renter points`;
+        return result;
     }
 
-    //add footer lines
-    result += `Amount owed is ${totalAmount}\nYou earned ${frequentRenterPoints} frequent renter points`;
-    return result;
-  }
+    /**
+     * @method getTotalCharge
+     * @return {number}
+     */
+    getTotalCharge() {
+        let result = 0;
+        
+        for (let rental of this.rentals) {
+            result += rental.getCharge();
+        }
+
+        return result;
+    }
+
+    /**
+     * @method getTotalFrequentRenterPoints
+     * @return {number}
+     */
+    getTotalFrequentRenterPoints() {
+        let result = 0;
+        
+        for (let rental of this.rentals) {
+            result += rental.getFrequentRenterPoints();
+        }
+
+        return result;
+    }
 }
 
 function test() {
