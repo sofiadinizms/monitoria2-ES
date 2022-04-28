@@ -97,48 +97,29 @@ class Customer {
    * @return {string}
    */
   statement() {
-      let totalAmount = 0;
-      let frequentRenterPoints = 0;
+    let totalAmount = 0;
+    let frequentRenterPoints = 0;
 
-      let result = `Rental Record for ${this.name}\n`;
+    let result = `Rental Record for ${this.name}\n`;
 
-      for (let rental of this.rentals) {
-          let thisAmount = 0;
+    for (let rental of this.rentals) {
+        let thisAmount = this.amountFor(rental); // <-- novo método!
 
-          // Determine amounts for each line
-          switch (rental.movie.priceCode) {
-              case Movie.REGULAR:
-                  thisAmount += 2;
-                  if (rental.daysRented > 2) {
-                      thisAmount += (rental.daysRented - 2) * 1.5;
-                  }
-                  break;
-              case Movie.NEW_RELEASE:
-                  thisAmount += rental.daysRented * 3;
-                  break;
-              case Movie.CHILDREN:
-                  thisAmount += 1.5;
-                  if (rental.daysRented > 3) {
-                      thisAmount += (rental.daysRented - 3) * 1.5;
-                  }
-                  break;
-          }
+        frequentRenterPoints++;
 
-          frequentRenterPoints++;
+        // add bonus for a two day new release rental
+        if (rental.movie.priceCode === Movie.NEW_RELEASE && rental.daysRented > 1) {
+            frequentRenterPoints++;
+        }
 
-          // add bonus for a two day new release rental
-          if (rental.movie.priceCode === Movie.NEW_RELEASE && rental.daysRented > 1) {
-              frequentRenterPoints++;
-          }
+        //show figures for this rental
+        result += `\t${rental.movie.title}\t${thisAmount}\n`;
+        totalAmount += thisAmount;
+    }
 
-          //show figures for this rental
-          result += `\t${rental.movie.title}\t${thisAmount}\n`;
-          totalAmount += thisAmount;
-      }
-
-      //add footer lines
-      result += `Amount owed is ${totalAmount}\nYou earned ${frequentRenterPoints} frequent renter points`;
-      return result;
+    //add footer lines
+    result += `Amount owed is ${totalAmount}\nYou earned ${frequentRenterPoints} frequent renter points`;
+    return result;
   }
 }
 
