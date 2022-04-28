@@ -93,6 +93,34 @@ class Customer {
   }
 
   /**
+   * @param {Rental} rental
+   * @return {number}
+   */
+  amountFor(rental) {
+  let amount = 0;
+
+  switch (rental.movie.priceCode) {
+      case Movie.REGULAR:
+          amount += 2;
+          if (rental.daysRented > 2) {
+              amount += (rental.daysRented() - 2) * 1.5;
+          }
+          break;
+      case Movie.NEW_RELEASE:
+          amount += rental.daysRented * 3;
+          break;
+      case Movie.CHILDREN:
+              amount += 1.5;
+          if (rental.daysRented > 3) {
+              amount += (rental.daysRented - 3) * 1.5;
+          }
+          break;
+  }
+
+    return amount;
+}
+
+  /**
    * @method statement
    * @return {string}
    */
