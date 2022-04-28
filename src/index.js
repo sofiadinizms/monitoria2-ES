@@ -18,12 +18,12 @@ class Movie {
   /**
    * @constructor
    * @param {string} title
-   * @param {number} priceCode
+   * @param {number} price
    * @return {Movie}
    */
-  constructor(title, priceCode) {
+  constructor(title, price) {
       this._title = title;
-      this._priceCode = priceCode;
+      this._price = price;
   }
 
   /**
@@ -34,14 +34,29 @@ class Movie {
   /**
    * @type {number}
    */
-  get priceCode() { return this._priceCode; }
+  get price() { return this._price; }
 
   /**
-   * @param {number} priceCode
+   * @param {number} price
    */
-  set priceCode(priceCode) {
-      this._priceCode = priceCode;
+  set price(price) {
+      this._price = price;
   }
+	/**
+	 * @param {number} daysRented
+	 * @return {number}
+	 */
+
+	getPriceCode(daysRented) {
+		return this.price.getPriceCode(daysRented);
+	}
+    /**
+     * @param {number} daysRented
+     * @return {number}
+	*/
+	getFrequentRenterPoints(daysRented) {
+    	return this.price.getFrequentRenterPoints(daysRented);
+    }
 }
 
 class Rental {
@@ -54,17 +69,12 @@ class Rental {
       this._daysRented = daysRented;
   }
 
-  /**
-   * @return {number}
-   */
-  getFrequentRenterPoints() {
-    if (this.movie.priceCode === Movie.NEW_RELEASE && this.daysRented > 1) {
-        return 2;
-    } else {
-        return 1;
-    }
-  }
-
+	/**
+	 * @return {number}
+	 */
+	getFrequentRenterPoints() {
+		return this.movie.getFrequentRenterPoints(this.daysRented);
+	}
   /**
    * @type {Movie} 
    */
@@ -75,35 +85,15 @@ class Rental {
    */
   get daysRented() { return this._daysRented; }
 
-      /**
+   /**
      * @return {number}
      */
-       getCharge() { // note que não precisa mais de parâmetro!
-        let amount = 0;
-
-        switch (this.movie.priceCode) {
-            case Movie.REGULAR:
-                amount += 2;
-                if (this.daysRented > 2) {
-                    amount += (this.daysRented - 2) * 1.5;
-                }
-                break;
-            case Movie.NEW_RELEASE:
-                amount += this.daysRented * 3;
-                break;
-            case Movie.CHILDREN:
-                    amount += 1.5;
-                if (this.daysRented > 3) {
-                    amount += (this.daysRented - 3) * 1.5;
-                }
-                break;
-        }
-
-        return amount;
+    getPriceCode() { // agora chama o novo método de Movie
+        return this.movie.getPriceCode(this.daysRented);
     }
 
   amountFor(rental) {
-    return rental.getCharge(); // agora apenas delega chamada para método movido
+    return rental.getPriceCode(); // agora apenas delega chamada para método movido
   }
 }
 
@@ -142,7 +132,7 @@ class Customer {
 
         for (let rental of this.rentals) {
             //show figures for this rental
-            result += `\t${rental.movie.title}\t${rental.getCharge()}\n`;
+            result += `\t${rental.movie.title}\t${rental.getPriceCode()}\n`;
         }
 
         //add footer lines
@@ -158,7 +148,7 @@ class Customer {
         let result = 0;
         
         for (let rental of this.rentals) {
-            result += rental.getCharge();
+            result += rental.getPriceCode();
         }
 
         return result;
@@ -188,13 +178,105 @@ class Customer {
 
         for (let rental of this.rentals) {
             //show figures for this rental
-            result += `<li>${rental.movie.title}: ${rental.getCharge()}</li>`;
+            result += `<li>${rental.movie.title}: ${rental.getPriceCode()}</li>`;
         }
 
         result += '</ul>';
 
         //add footer lines
         result += `<p>Amount owed is <strong>${this.getTotalCharge()}</strong>.<br/>You earned ${this.getTotalFrequentRenterPoints()} frequent renter points</p>`;
+
+        return result;
+    }
+}
+
+class Price {
+    constructor() {
+        if (this.constructor === Price) {
+            throw new TypeError("Abstract class `Price` can not be instantiated");
+        }
+    }
+	/**
+	 * @param {number} daysRented
+	 * @return {number}
+	 */
+	getPriceCode(daysRented) {
+        let amount = 0;
+
+        switch (this.getPriceCode) {
+            case Movie.REGULAR:
+                amount += 2;
+                if (daysRented > 2) {
+                    amount += (daysRented - 2) * 1.5;
+                }
+                break;
+            case Movie.NEW_RELEASE:
+                amount += daysRented * 3;
+                break;
+            case Movie.CHILDREN:
+                    amount += 1.5;
+                if (daysRented > 3) {
+                    amount += (daysRented - 3) * 1.5;
+                }
+                break;
+        }
+
+        return amount;
+    }
+
+    getPriceCode() {
+        throw new TypeError("Method `getPriceCode` should be implemented");
+    }
+    
+	getFrequentRenterPoints() {
+        return 1;
+    }
+}
+
+class ChildrenPrice extends Price {
+    /**
+     * @inherit
+     * @param {number} daysRented
+     * @return {number}
+     */
+    getPriceCode(daysRented) {
+        let result = 1.5;
+
+        if (daysRented > 3) {
+            result += (daysRented - 3) * 1.5;
+        }
+
+        return result;
+    }
+}
+
+class NewReleasePrice extends Price {
+    /**
+     * @inherit
+     * @param {number} daysRented
+     * @return {number}
+     */
+    getPriceCode(daysRented) {
+        return daysRented * 3;
+    }
+    
+	getFrequentRenterPoints(daysRented) {
+        return (daysRented > 1) ? 2 : 1;
+    }
+}
+
+class RegularPrice extends Price {
+    /**
+     * @inherit
+     * @param {number} daysRented
+     * @return {number}
+     */
+    getPriceCode(daysRented) {
+        let result = 2;
+
+        if (daysRented > 2) {
+            result += (daysRented - 2) * 1.5;
+        }
 
         return result;
     }
